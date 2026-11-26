@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>90s Kawaii Phone - Dark Screen Edition</title>
+<script src="https://unpkg.com"></script>
+<link href="https://googleapis.com" rel="stylesheet">
+<style>
+:root {
+    --body-pink: #ffcce0;
+    --body-border: #ff85b3;
+    --screen-bg: #120d14;
+    --screen-border: #ff66a3;
+    --neon-pink: #ff77b7;
+    --neon-cyan: #72efdd;
+    --text-dark: #5c2a42;
+}
+* { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+body {
+    margin: 0; padding: 10px;
+    background: linear-gradient(135deg, #ffd6e7 0%, #e0f2fe 50%, #fef08a 100%);
+    font-family: 'Mali', sans-serif;
+    display: flex; justify-content: center; align-items: center; min-height: 100vh;
+}
+/* ตัวเครื่องสีชมพูพาสเทลเหมือนเดิม */
+.phone-chassis {
+    width: 350px; background: var(--body-pink);
+    border-radius: 45px 45px 55px 55px; padding: 18px 16px 22px;
+    box-shadow: inset 0 6px 14px rgba(255,255,255,0.95), inset 0 -10px 18px rgba(217,102,144,0.45), 0 22px 45px rgba(180,80,120,0.4);
+    border: 5px solid var(--body-border); position: relative; margin-top: 32px;
+}
+.antenna {
+    width: 22px; height: 42px;
+    background: linear-gradient(90deg, #ff99c2, #ffcce0, #ff80b3);
+    position: absolute; top: -42px; right: 42px;
+    border-radius: 12px 12px 0 0; border: 3px solid #e6679c; border-bottom: none;
+}
+.antenna::after { content: '🎀'; position: absolute; top: -18px; left: -5px; font-size: 22px; }
+.top-speaker-area { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding: 0 10px; font-size: 20px; }
+.speaker-grill {
+    width: 85px; height: 11px; background: #b34d75; border-radius: 10px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+    display: flex; justify-content: space-around; align-items: center; padding: 0 8px;
+}
+.speaker-hole { width: 4px; height: 4px; background: #3d1424; border-radius: 50%; }
+
+/* กรอบจอ & หน้าจอ LCD สีดำ */
+.screen-bezel {
+    background: #ffffff; border-radius: 22px; padding: 10px;
+    border: 4px solid #ff85b3; margin-bottom: 14px;
+    box-shadow: inset 0 3px 8px rgba(0,0,0,0.12);
+}
+.brand-label { text-align: center; font-size: 11px; font-weight: 700; color: #ff3385; letter-spacing: 1px; margin-bottom: 4px; }
+.lcd-screen {
+    width: 100%; height: 295px; background: var(--screen-bg);
+    border: 3px solid var(--screen-border); border-radius: 12px;
+    position: relative; overflow: hidden; display: flex; flex-direction: column;
+    color: #ffe6f2; box-shadow: inset 0 0 20px rgba(255, 102, 163, 0.25);
+}
+/* ตัวการ์ตูนลอยในหน้าจอดำ */
+.floating-chars { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+.char-float { position: absolute; font-size: 18px; opacity: 0.75; animation: floatAround 6s infinite ease-in-out; }
+.c1 { top: 26px; left: 8px; }
+.c2 { bottom: 24px; right: 8px; animation-delay: 1.5s; }
+.c3 { top: 44%; right: 6px; animation-delay: 3s; }
+.c4 { bottom: 30px; left: 10px; animation-delay: 2s; }
+@keyframes floatAround { 0%, 100% { transform: translateY(0) rotate(-6deg); } 50% { transform: translateY(-8px) rotate(8deg); } }
+
+.status-bar {
+    height: 22px; background: rgba(255, 77, 148, 0.28);
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0 8px; font-family: 'VT323', monospace; font-size: 15px;
+    color: var(--neon-pink); border-bottom: 1px dashed rgba(255, 119, 183, 0.5); z-index: 5;
+}
+.app-viewport { flex: 1; position: relative; z-index: 2; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; }
+
+/* แจ้งเตือนแบบ LINE */
+.line-toast {
+    position: absolute; top: 24px; left: 6px; right: 6px;
+    background: #1f1924; border: 2px solid #06c755; border-radius: 10px;
+    padding: 6px 8px; z-index: 50; box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+    display: none; cursor: pointer;
+}
+.toast-header { display: flex; justify-content: space-between; font-size: 10px; font-weight: 700; color: #06c755; }
+.toast-body { font-size: 11px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+
+/* หน้าโฮมบนจอดำ */
+.home-clock { text-align: center; margin-top: 4px; font-family: 'VT323', monospace; }
+.clock-time { font-size: 38px; line-height: 1; color: var(--neon-pink); text-shadow: 0 0 8px rgba(255,119,183,0.7); }
+.clock-date { font-size: 13px; color: #ffb3d9; }
+.my-id-pill {
+    background: rgba(255, 119, 183, 0.18); border: 1.5px solid var(--neon-pink);
+    border-radius: 12px; padding: 2px 10px; font-size: 11px; margin: 4px auto;
+    display: inline-block; font-weight: 700; color: #fff; cursor: pointer;
+}
+
+/* ตารางแอป & ไฮไลต์เวลาเลื่อนปุ่มลูกศร */
+.app-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px 4px; margin-top: 6px; }
+.app-icon {
+    display: flex; flex-direction: column; align-items: center; cursor: pointer;
+    padding: 4px 2px; border-radius: 10px; border: 2px solid transparent; transition: all 0.12s;
+}
+.app-icon.active-cursor {
+    background: rgba(255, 119, 183, 0.32);
+    border: 2px solid var(--neon-cyan);
+    box-shadow: 0 0 10px rgba(114, 239, 221, 0.6);
+    transform: scale(1.07);
+}
+.app-emoji {
+    font-size: 20px; background: #261c2b; width: 34px; height: 34px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 10px; border: 1.5px solid #ff85b3;
+}
+.app-name { font-size: 9px; font-weight: 700; margin-top: 2px; text-align: center; line-height: 1.1; color: #ffe6f2; }
+
+.softkey-bar {
+    height: 21px; background: rgba(255, 77, 148, 0.32);
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0 10px; font-size: 11px; font-weight: 700; color: var(--neon-cyan);
+    border-top: 1px solid rgba(255, 119, 183, 0.5); z-index: 5;
+}
+
+/* ปุ่มควบคุม 3 มิติ + D-Pad เลื่อนได้จริงมีมิติ */
+.nav-cluster { display: grid; grid-template-columns: 1fr 1.25fr 1fr; gap: 8px; align-items: center; margin-bottom: 12px; }
+.hw-btn {
+    border: 2px solid #fff; border-radius: 16px; padding: 8px 4px;
+    font-family: 'Mali', sans-serif; font-weight: 700; font-size: 11.5px; cursor: pointer;
+    box-shadow: 0 5px 0 #c95b84, 0 7px 10px rgba(0,0,0,0.2);
+    transition: transform 0.06s, box-shadow 0.06s;
+    display: flex; flex-direction: column; align-items: center; color: var(--text-dark);
+}
+.hw-btn:active { transform: translateY(4px); box-shadow: 0 1px 0 #c95b84; }
+.btn-call { background: linear-gradient(180deg, #d8f3dc, #95d5b2); box-shadow: 0 5px 0 #40916c, 0 7px 10px rgba(0,0,0,0.2); color: #1b4332; }
+.btn-call:active { box-shadow: 0 1px 0 #40916c; }
+.btn-end { background: linear-gradient(180deg, #ffe5ec, #ff8fa3); box-shadow: 0 5px 0 #c9184a, 0 7px 10px rgba(0,0,0,0.2); color: #590d22; }
+.btn-end:active { box-shadow: 0 1px 0 #c9184a; }
+.btn-soft { background: linear-gradient(180deg, #ffffff, #ffe0ec); }
+
+/* D-Pad 3 มิติ กดยุบได้จริงทุกทิศทาง */
+.dpad-3d {
+    width: 84px; height: 84px; margin: 0 auto; position: relative;
+    background: linear-gradient(145deg, #ffffff, #ffd6e7);
+    border-radius: 50%; border: 3px solid #ff85b3;
+    box-shadow: 0 6px 0 #c95b84, 0 10px 15px rgba(180,60,110,0.35), inset 0 3px 6px #fff;
+}
+.dpad-dir {
+    position: absolute; width: 26px; height: 26px; border: none;
+    background: rgba(255, 133, 179, 0.22); border-radius: 50%;
+    color: #d6336c; font-size: 13px; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 0 #e6679c; transition: transform 0.06s;
+}
+.dpad-dir:active { transform: scale(0.88) translateY(2px); background: #ff85b3; color: #fff; }
+.d-up { top: 3px; left: 50%; transform: translateX(-50%); }
+.d-up:active { transform: translateX(-50%) scale(0.9) translateY(2px); }
+.d-down { bottom: 3px; left: 50%; transform: translateX(-50%); }
+.d-down:active { transform: translateX(-50%) scale(0.9) translateY(2px); }
+.d-left { left: 3px; top: 50%; transform: translateY(-50%); }
+.d-left:active { transform: translateY(-50%) scale(0.9) translateY(2px); }
+.d-right { right: 3px; top: 50%; transform: translateY(-50%); }
+.d-right:active { transform: translateY(-50%) scale(0.9) translateY(2px); }
+.d-ok {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 34px; height: 34px; border-radius: 50%;
+    background: linear-gradient(180deg, #ff85b3, #ff3385); color: #fff;
+    border: 2px solid #fff; font-size: 11px; font-weight: 700; cursor: pointer;
+    box-shadow: 0 4px 0 #a61e4d, 0 5px 8px rgba(0,0,0,0.25); transition: all 0.06s;
+}
+.d-ok:active { transform: translate(-50%, -44%); box-shadow: 0 1px 0 #a61e4d; }
+
+/* ปุ่มกดตัวเลข 3 มิติ ลายการ์ตูนเด่น */
+.keypad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
+.num-key {
+    border-radius: 18px; padding: 7px 4px; border: 2px solid #ffffff; cursor: pointer;
+    box-shadow: 0 5px 0 #c95b84, 0 7px 10px rgba(180,70,115,0.25), inset 0 3px 5px rgba(255,255,255,0.9);
+    transition: transform 0.06s, box-shadow 0.06s;
+    display: flex; flex-direction: column; align-items: center; position: relative;
+}
+.num-key:active { transform: translateY(4px); box-shadow: 0 1px 0 #c95b84; }
+.k-pink { background: linear-gradient(180deg, #fff5f8, #ffd6e7); }
+.k-blue { background: linear-gradient(180deg, #f0f9ff, #bae6fd); }
+.k-purple { background: linear-gradient(180deg, #faf5ff, #e9d5ff); }
+.k-yellow { background: linear-gradient(180deg, #fefce8, #fef08a); }
+.key-num { font-size: 18px; font-weight: 700; color: #d6336c; line-height: 1; text-shadow: 1px 1px 0 #fff; }
+.key-sub { font-size: 8.5px; color: #6d3b52; font-weight: 700; margin-top: 2px; }
+.key-deco { position: absolute; right: 5px; top: 2px; font-size: 13px; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.15)); }
+
+/* การ์ดภายในแอปบนจอดำ */
+.mini-card {
+    background: rgba(38, 28, 43, 0.92); border-radius: 10px; padding: 8px;
+    margin-bottom: 6px; border: 1.5px solid #ff77b7; font-size: 12px; color: #ffe6f2;
+}
+.mini-input {
+    width: 100%; padding: 5px 8px; border-radius: 8px; border: 1.5px solid #ff77b7;
+    font-family: 'Mali', sans-serif; font-size: 12px; outline: none; background: #1c1421; color: #fff;
+}
+.mini-btn {
+    background: #ff4d94; color: #fff; border: none; border-radius: 8px;
+    padding: 5px 10px; font-family: 'Mali', sans-serif; font-size: 11px; font-weight: 700; cursor: pointer; margin-top: 4px;
+}
+.mini-btn.sec { background: #4cc9f0; color: #0b2545; }
+.mini-btn.green { background: #52b788; color: #081c15; }
+
+/* กล้องยุค 2538 */
+.retro-cam-wrap { position: relative; width: 100%; height: 150px; background: #000; border-radius: 8px; overflow: hidden; border: 2px solid #ff77b7; }
+#camVideo { width: 100%; height: 100%; object-fit: cover; filter: contrast(1.25) saturate(1.35) sepia(.22); image-rendering: pixelated; }
+.cam-overlay-95 {
+    position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,.15), rgba(0,0,0,.15) 1px, transparent 1px, transparent 2px);
+    display: flex; flex-direction: column; justify-content: space-between; padding: 4px 6px;
+    font-family: 'VT323', monospace; color: #ffeb3b; text-shadow: 1px 1px 0 #000; font-size: 13px;
+}
+.chat-box { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; padding: 4px; background: rgba(20,15,24,.85); border-radius: 8px; margin-bottom: 5px; border: 1px solid #5c2a42; }
+.msg-bubble { max-width: 82%; padding: 5px 8px; border-radius: 10px; font-size: 11.5px; word-wrap: break-word; }
+.msg-me { align-self: flex-end; background: #ff4d94; color: #fff; }
+.msg-friend { align-self: flex-start; background: #2d2233; border: 1px solid #ff77b7; color: #ffe6f2; }
+#candyCanvas { background: linear-gradient(180deg, #1d1426 0%, #36213e 100%); border: 2px solid #ff77b7; border-radius: 8px; display: block; margin: 0 auto; }
+</style>
+</head>
+<body>
+
+<div class="phone-chassis">
+    <div class="antenna"></div>
+    <div class="top-speaker-area">
+        <span>🐰🎀</span>
+        <div class="speaker-grill"><div class="speaker-hole"></div><div class="speaker-hole"></div><div class="speaker-hole"></div><div class="speaker-hole"></div></div>
+        <span>🐱🌸</span>
+    </div>
+
+    <div class="screen-bezel">
+        <div class="brand-label">✦ SANRIO × SHIN-CHAN 1995 ✦</div>
+        <div class="lcd-screen">
+            <div class="floating-chars">
+                <span class="char-float c1">👦🏻🖍️</span>
+                <span class="char-float c2">🐰🎀</span>
+                <span class="char-float c3">🐱🍎</span>
+                <span class="char-float c4">🐶🤍</span>
+            </div>
+
+            <div id="lineToast" class="line-toast" onclick="openApp('chat')">
+                <div class="toast-header"><span>💬 LINE 90s แจ้งเตือนใหม่!</span><span id="toastTime">ตอนนี้</span></div>
+                <div class="toast-body" id="toastText">เพื่อนส่งข้อความถึงคุณ</div>
+            </div>
+
+            <div class="status-bar">
+                <span>📶 TH-GSM 95</span>
+                <span id="topClock">12:00</span>
+                <span>🔋100%</span>
+            </div>
+
+            <div class="app-viewport" id="appViewport"></div>
+
+            <div class="softkey-bar">
+                <span id="leftSoftLabel">เมนู</span>
+                <span id="centerSoftLabel">ตกลง</span>
+                <span id="rightSoftLabel">กลับ</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="nav-cluster">
+        <div style="display:flex;flex-direction:column;gap:7px">
+            <button class="hw-btn btn-soft" onclick="handleLeftSoft()">เมนู / เลือก</button>
+            <button class="hw-btn btn-call" onclick="handleCallBtn()">📞 โทรออก</button>
+        </div>
+
+        <div class="dpad-3d">
+            <button class="dpad-dir d-up" onclick="handleDpad('UP')">▲</button>
+            <button class="dpad-dir d-down" onclick="handleDpad('DOWN')">▼</button>
+            <button class="dpad-dir d-left" onclick="handleDpad('LEFT')">◀</button>
+            <button class="dpad-dir d-right" onclick="handleDpad('RIGHT')">▶</button>
+            <button class="d-ok" onclick="handleCenterOk()">OK</button>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:7px">
+            <button class="hw-btn btn-soft" onclick="handleRightSoft()">ย้อนกลับ</button>
+            <button class="hw-btn btn-end" onclick="goHome()">📴 วางสาย/โฮม</button>
+        </div>
+    </div>
+
+    <div class="keypad-grid">
+        <button class="num-key k-pink" onclick="pressKey('1','.,?!1')"><span class="key-deco">🎀</span><span class="key-num">1</span><span class="key-sub">.,?! ก-ค</span></button>
+        <button class="num-key k-blue" onclick="pressKey('2','abc2')"><span class="key-deco">🐰</span><span class="key-num">2</span><span class="key-sub">ABC ฆ-จ</span></button>
+        <button class="num-key k-purple" onclick="pressKey('3','def3')"><span class="key-deco">🐱</span><span class="key-num">3</span><span class="key-sub">DEF ฉ-ญ</span></button>
+        <button class="num-key k-yellow" onclick="pressKey('4','ghi4')"><span class="key-deco">🖍️</span><span class="key-num">4</span><span class="key-sub">GHI ฎ-ณ</span></button>
+        <button class="num-key k-pink" onclick="pressKey('5','jkl5')"><span class="key-deco">🌸</span><span class="key-num">5</span><span class="key-sub">JKL ด-น</span></button>
+        <button class="num-key k-blue" onclick="pressKey('6','mno6')"><span class="key-deco">🍓</span><span class="key-num">6</span><span class="key-sub">MNO บ-ฟ</span></button>
+        <button class="num-key k-purple" onclick="pressKey('7','pqrs7')"><span class="key-deco">🐶</span><span class="key-num">7</span><span class="key-sub">PQRS ภ-ล</span></button>
+        <button class="num-key k-yellow" onclick="pressKey('8','tuv8')"><span class="key-deco">🍮</span><span class="key-num">8</span><span class="key-sub">TUV ว-ห</span></button>
+        <button class="num-key k-pink" onclick="pressKey('9','wxyz9')"><span class="key-deco">👦🏻</span><span class="key-num">9</span><span class="key-sub">WXYZ อ-ฮ</span></button>
+        <button class="num-key k-blue" onclick="pressKey('*','*')"><span class="key-deco">💖</span><span class="key-num">*</span><span class="key-sub">สัญลักษณ์</span></button>
+        <button class="num-key k-purple" onclick="pressKey('0',' 0')"><span class="key-deco">☁️</span><span class="key-num">0</span><span class="key-sub">เว้นวรรค</span></button>
+        <button class="num-key k-yellow" onclick="pressKey('#','DEL')"><span class="key-deco">🔙</span><span class="key-num">#</span><span class="key-sub">ลบตัวอักษร</span></button>
+    </div>
+</div>
+
+<script>
+const EMBEDDED_SONGS = [
+    { title: "1. เพลงโปรด #1 (YouTube)", id: "hvPBvpJcgns" },
+    { title: "2. เพลงโปรด #2 (YouTube)", id: "qg3vYbchcDE" },
+    { title: "3. เพลงโปรด #3 (YouTube)", id: "O4-3pewcDEY" },
+    { title: "4. เพียงแค่ใจเรารักกัน - วิยะดา", id: "47oRTJJHxCU" }
+];
+
+const HOME_APPS = [
+    { id: 'phone', icon: '📞', name: 'โทร 5 หลัก' },
+    { id: 'chat', icon: '💬', name: 'แชท/เพื่อน' },
+    { id: 'music', icon: '🎵', name: 'เพลง 4 ลิงก์' },
+    { id: 'youtube', icon: '📺', name: 'YouTube' },
+    { id: 'camera', icon: '📸', name: 'กล้อง 2538' },
+    { id: 'gallery', icon: '🖼️', name: 'อัลบั้ม' },
+    { id: 'candy', icon: '🍬', name: 'เก็บลูกอม' },
+    { id: 'calc', icon: '🧮', name: 'เครื่องคิดเลข' },
+    { id: 'notes', icon: '📝', name: 'สมุดบันทึก' },
+    { id: 'alarm', icon: '⏰', name: 'นาฬิกาปลุก' }
+];
+let selectedAppIndex = 0;
+
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function playBeep(freq = 650, duration = 0.06, type = 'sine') {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+    osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(); osc.stop(audioCtx.currentTime + duration);
+}
+function playNotificationSound() { playBeep(880, 0.1, 'triangle'); setTimeout(() => playBeep(1174, 0.18, 'triangle'), 110); }
+
+const PEER_PREFIX = "kawaii90s_phone_";
+let my5DigitNumber = localStorage.getItem('my_permanent_5digit');
+if (!my5DigitNumber) { my5DigitNumber = Math.floor(10000 + Math.random() * 90000).toString(); localStorage.setItem('my_permanent_5digit', my5DigitNumber); }
+
+let peer = null, activeConn = null, currentCall = null;
+let friendNumber = localStorage.getItem('saved_friend_5digit') || "";
+let chatMessages = JSON.parse(localStorage.getItem('kawaii_chat_logs') || "[]");
+let peerStatus = "กำลังเชื่อมต่อ...";
+
+function initPeerNetwork() {
+    peer = new Peer(PEER_PREFIX + my5DigitNumber);
+    peer.on('open', () => { peerStatus = "ออนไลน์พร้อมคุย"; if (['home','chat','phone'].includes(currentApp)) renderApp(); });
+    peer.on('error', () => { peerStatus = "กำลังเชื่อมต่อใหม่..."; });
+    peer.on('connection', conn => setupDataConnection(conn));
+    peer.on('call', call => {
+        playNotificationSound();
+        showToast(`📞 สายเรียกเข้าจากเบอร์ ${call.peer.replace(PEER_PREFIX, '')}!`);
+        if (confirm(`📞 สายเรียกเข้าจากเพื่อนเบอร์ ${call.peer.replace(PEER_PREFIX, '')} ต้องการรับสายไหมคะ?`)) {
+            navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+                call.answer(stream); currentCall = call;
+                call.on('stream', rStream => { const a = new Audio(); a.srcObject = rStream; a.play(); });
+                openApp('phone');
+            }).catch(() => alert("กรุณากดอนุญาตไมโครโฟนเพื่อคุยโทรศัพท์ค่ะ"));
+        }
+    });
+}
+
+function setupDataConnection(conn) {
+    activeConn = conn;
+    conn.on('data', data => {
+        if (data.type === 'chat') {
+            const sender = conn.peer.replace(PEER_PREFIX, '');
+            friendNumber = sender; localStorage.setItem('saved_friend_5digit', sender);
+            chatMessages.push({ sender: 'friend', id: sender, text: data.text, time: getNowTime() });
+            localStorage.setItem('kawaii_chat_logs', JSON.stringify(chatMessages));
+            playNotificationSound(); showToast(`จาก ${sender}: ${data.text}`);
+            if (currentApp === 'chat') renderApp();
+        }
+    });
+}
+
+function connectToFriend(target5Digit) {
+    if (!target5Digit || target5Digit.length !== 5) return alert("กรุณากรอกเบอร์เพื่อนให้ครบ 5 ตัวเลขนะคะ");
+    friendNumber = target5Digit; localStorage.setItem('saved_friend_5digit', target5Digit);
+    setupDataConnection(peer.connect(PEER_PREFIX + target5Digit));
+}
+
+function showToast(msg) {
+    const t = document.getElementById('lineToast');
+    document.getElementById('toastText').innerText = msg;
+    document.getElementById('toastTime').innerText = getNowTime();
+    t.style.display = 'block';
+    setTimeout(() => t.style.display = 'none', 5000);
+}
+
+let currentApp = 'home', dialedNumber = '', activeInputId = null, lastKey = '', keyTapCount = 0, lastTapTime = 0;
+function getNowTime() { return new Date().toTimeString().slice(0, 5); }
+setInterval(() => {
+    const t = getNowTime();
+    document.getElementById('topClock').innerText = t;
+    const hc = document.getElementById('homeClockDisplay'); if (hc) hc.innerText = t;
+}, 1000);
+
+function pressKey(num, chars) {
+    playBeep(500 + (parseInt(num) || 10) * 45, 0.07);
+    if (currentApp === 'candy') {
+        if (num === '2' || num === '5') melodyJump();
+        return;
+    }
+    const targetInput = (document.activeElement && ['INPUT','TEXTAREA'].includes(document.activeElement.tagName))
+        ? document.activeElement : (activeInputId ? document.getElementById(activeInputId) : null);
+
+    if (targetInput) {
+        if (num === '#') { targetInput.value = targetInput.value.slice(0, -1); targetInput.dispatchEvent(new Event('input')); return; }
+        const now = Date.now();
+        if (num === lastKey && (now - lastTapTime) < 900 && chars.length > 1) {
+            keyTapCount = (keyTapCount + 1) % chars.length;
+            targetInput.value = targetInput.value.slice(0, -1) + chars[keyTapCount];
+        } else { keyTapCount = 0; targetInput.value += chars; }
+        lastKey = num; lastTapTime = now; targetInput.dispatchEvent(new Event('input'));
+        return;
+    }
+    if (currentApp === 'home' || currentApp === 'phone') {
+        if (num === '#') dialedNumber = dialedNumber.slice(0, -1);
+        else if (dialedNumber.length < 5) dialedNumber += num;
+        currentApp = 'phone'; renderApp();
+    }
+}
+
+function openApp(appName) {
+    playBeep(780, 0.07); stopCameraStream(); stopCandyGame();
+    currentApp = appName; activeInputId = null; renderApp();
+}
+function goHome() {
+    playBeep(440, 0.09); stopCameraStream(); stopCandyGame();
+    if (currentCall) { currentCall.close(); currentCall = null; }
+    currentApp = 'home'; dialedNumber = ''; activeInputId = null; renderApp();
+}
+function handleRightSoft() { if (currentApp !== 'home') goHome(); }
+function handleLeftSoft() {
+    playBeep(660, 0.06);
+    if (currentApp === 'home') openApp(HOME_APPS[selectedAppIndex].id);
+}
+function handleCenterOk() {
+    playBeep(820, 0.06);
+    if (currentApp === 'home') openApp(HOME_APPS[selectedAppIndex].id);
+    else if (currentApp === 'camera') takeRetroPhoto();
+    else if (currentApp === 'candy') melodyJump();
+}
+function handleCallBtn() {
+    playBeep(900, 0.1);
+    if (currentApp !== 'phone') openApp('phone');
+    else if (dialedNumber.length === 5) makeVoiceCall(dialedNumber);
+}
+
+function handleDpad(dir) {
+    playBeep(620, 0.05);
+    if (currentApp === 'home') {
+        if (dir === 'RIGHT') selectedAppIndex = (selectedAppIndex + 1) % HOME_APPS.length;
+        if (dir === 'LEFT') selectedAppIndex = (selectedAppIndex - 1 + HOME_APPS.length) % HOME_APPS.length;
+        if (dir === 'DOWN') selectedAppIndex = (selectedAppIndex + 4) % HOME_APPS.length;
+        if (dir === 'UP') selectedAppIndex = (selectedAppIndex - 4 + HOME_APPS.length) % HOME_APPS.length;
+        renderApp();
+    } else if (currentApp === 'candy') {
+        if (dir === 'UP') melodyJump();
+    } else {
+        const vp = document.getElementById('appViewport');
+        if (dir === 'UP') vp.scrollTop -= 45;
+        if (dir === 'DOWN') vp.scrollTop += 45;
+    }
+}
+
+function renderApp() {
+    const vp = document.getElementById('appViewport');
+    const lSoft = document.getElementById('leftSoftLabel'), cSoft = document.getElementById('centerSoftLabel'), rSoft = document.getElementById('rightSoftLabel');
+
+    if (currentApp === 'home') {
+        lSoft.innerText = "เปิดแอป";
+        cSoft.innerText = `[${HOME_APPS[selectedAppIndex].name}]`;
+        rSoft.innerText = "โฮม";
+
+        const gridHtml = HOME_APPS.map((app, idx) => `
+            <div class="app-icon ${idx === selectedAppIndex ? 'active-cursor' : ''}" onclick="selectedAppIndex=${idx}; openApp('${app.id}')">
+                <div class="app-emoji">${app.icon}</div>
+                <div class="app-name">${app.name}</div>
+            </div>
+        `).join('');
+
+        vp.innerHTML = `
+            <div class="home-clock">
+                <div class="clock-time" id="homeClockDisplay">${getNowTime()}</div>
+                <div class="clock-date">พ.ศ. 2538 (1995) • คาวาอี้</div>
+                <div class="my-id-pill" onclick="copyMyId()">🆔 เบอร์ฉัน: <b>${my5DigitNumber}</b> (กดคัดลอก)</div>
+            </div>
+            <div class="app-grid">${gridHtml}</div>`;
+    } else if (currentApp === 'phone') {
+        lSoft.innerText = "โทรออก"; cSoft.innerText = "กดเบอร์"; rSoft.innerText = "กลับ";
+        vp.innerHTML = `
+            <div class="mini-card" style="text-align:center">
+                <div style="font-size:11px;color:#ff77b7">เบอร์ถาวรของคุณ: <b>${my5DigitNumber}</b> (${peerStatus})</div>
+                <input id="dialInput" class="mini-input" style="font-size:20px;text-align:center;font-weight:700;letter-spacing:3px;margin:6px 0" value="${dialedNumber}" placeholder="กดเบอร์ 5 ตัว" maxlength="5" oninput="dialedNumber=this.value">
+                <div style="display:flex;gap:5px;justify-content:center">
+                    <button class="mini-btn green" onclick="makeVoiceCall(document.getElementById('dialInput').value)">📞 โทรหาเพื่อน</button>
+                    <button class="mini-btn sec" onclick="shareInviteLink()">🔗 ส่งลิงก์ชวนเพื่อน</button>
+                </div>
+            </div>
+            ${friendNumber ? `<div class="mini-card"><b>เพื่อนล่าสุด:</b> เบอร์ ${friendNumber}<br><button class="mini-btn" onclick="makeVoiceCall('${friendNumber}')">โทรหา ${friendNumber} ทันที</button></div>` : ''}
+            <div id="callStatusArea" style="text-align:center;font-size:12px;color:#72efdd;font-weight:700">${currentCall ? '🔊 กำลังสนทนา... กดปุ่มแดงเพื่อวางสาย' : 'กดเลข 5 หลักเพื่อโทรได้เลย'}</div>`;
+        activeInputId = 'dialInput';
+    } else if (currentApp === 'chat') {
+        lSoft.innerText = "ส่ง"; cSoft.innerText = "พิมพ์"; rSoft.innerText = "กลับ";
+        const msgsHtml = chatMessages.map(m => `<div class="msg-bubble ${m.sender==='me'?'msg-me':'msg-friend'}"><div style="font-size:9px;opacity:.75">${m.sender==='me'?'ฉัน':'เพื่อน ('+m.id+')'} • ${m.time}</div><div>${m.text}</div></div>`).join('');
+        vp.innerHTML = `
+            <div class="mini-card" style="padding:5px">
+                <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px">
+                    <span>รหัสฉัน: <b>${my5DigitNumber}</b></span>
+                    <button class="mini-btn sec" style="margin:0;padding:2px 6px" onclick="shareInviteLink()">ส่งลิงก์ให้เพื่อน</button>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:4px">
+                    <input id="friendIdInput" class="mini-input" placeholder="รหัสเพื่อน 5 ตัว" maxlength="5" value="${friendNumber}" style="padding:3px 6px">
+                    <button class="mini-btn" style="margin:0" onclick="connectToFriend(document.getElementById('friendIdInput').value);alert('เชื่อมต่อเรียบร้อย!')">เชื่อมต่อ</button>
+                </div>
+            </div>
+            <div class="chat-box" id="chatBoxList">${msgsHtml || '<div style="text-align:center;color:#aaa;font-size:11px;margin-top:20px">ใส่รหัส 5 ตัวของเพื่อนด้านบนแล้วทักเลย!</div>'}</div>
+            <div style="display:flex;gap:4px">
+                <input id="chatMsgInput" class="mini-input" placeholder="พิมพ์ข้อความ..." onfocus="activeInputId='chatMsgInput'" onkeydown="if(event.key==='Enter')sendChatMsg()">
+                <button class="mini-btn" style="margin:0" onclick="sendChatMsg()">ส่ง</button>
+            </div>`;
+        activeInputId = 'chatMsgInput';
+        setTimeout(() => { const cb = document.getElementById('chatBoxList'); if (cb) cb.scrollTop = cb.scrollHeight; }, 50);
+    } else if (currentApp === 'music') {
+        lSoft.innerText = "เล่น"; cSoft.innerText = "เลือกเพลง"; rSoft.innerText = "กลับ";
+        const songBtns = EMBEDDED_SONGS.map((s, i) => `<button class="mini-btn ${i%2===0?'':'sec'}" style="width:100%;text-align:left;margin-bottom:4px" onclick="playEmbeddedSong('${s.id}','${s.title}')">▶ ${s.title}</button>`).join('');
+        vp.innerHTML = `
+            <div class="mini-card">
+                <div style="font-weight:700;color:#ff77b7;margin-bottom:4px">🎵 เพลงในเครื่อง (กดเลือกเพื่อรันทันที)</div>
+                <div style="background:#000;border-radius:8px;overflow:hidden;margin-bottom:5px">
+                    <iframe id="musicIframe" width="100%" height="110" src="https://www.youtube-nocookie.com{EMBEDDED_SONGS[0].id}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+
+                </div>
+                <div id="nowPlayingLabel" style="font-size:11px;font-weight:700;color:#72efdd;margin-bottom:5px">กำลังเล่น: ${EMBEDDED_SONGS[0].title}</div>
+                ${songBtns}
+            </div>`;
+    } else if (currentApp === 'youtube') {
+        lSoft.innerText = "ค้นหา"; cSoft.innerText = "ดูวิดีโอ"; rSoft.innerText = "กลับ";
+        vp.innerHTML = `
+            <div class="mini-card" style="padding:6px">
+                <div style="font-weight:700;color:#ff4d6d;font-size:12px;margin-bottom:4px">📺 YouTube 90s Pocket</div>
+                <div style="display:flex;gap:4px;margin-bottom:5px">
+                    <input id="ytSearchInput" class="mini-input" placeholder="วางลิงก์ YouTube หรือค้นหา..." onfocus="activeInputId='ytSearchInput'" onkeydown="if(event.key==='Enter')searchAndPlayYT()">
+                    <button class="mini-btn" style="margin:0;background:#e60000" onclick="searchAndPlayYT()">เล่น</button>
+                </div>
+                <div style="background:#000;border-radius:8px;overflow:hidden">
+                    <iframe id="ytMainFrame" width="100%" height="145" src="https://youtube-nocookie.com" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap">
+                    <button class="mini-btn sec" style="font-size:10px;padding:3px 6px" onclick="quickYT('ชินจังจอมแก่น ตอนเต็ม')">🖍️ ชินจัง</button>
+                    <button class="mini-btn" style="font-size:10px;padding:3px 6px" onclick="quickYT('My Melody cartoon')">🐰 มายเมโลดี้</button>
+                    <button class="mini-btn green" style="font-size:10px;padding:3px 6px" onclick="quickYT('หนังไทยเต็มเรื่อง')">🎬 ดูหนัง</button>
+                </div>
+            </div>`;
+        activeInputId = 'ytSearchInput';
+    } else if (currentApp === 'camera') {
+        lSoft.innerText = "ถ่ายรูป"; cSoft.innerText = "ชัตเตอร์"; rSoft.innerText = "กลับ";
+        vp.innerHTML = `
+            <div class="retro-cam-wrap">
+                <video id="camVideo" autoplay playsinline muted></video>
+                <div class="cam-overlay-95">
+                    <div style="display:flex;justify-content:space-between"><span>REC ● 1995-CAM</span><span>2538</span></div>
+                    <div style="text-align:right">25/11/2538</div>
+                </div>
+            </div>
+            <div style="display:flex;gap:5px;justify-content:center;margin-top:6px">
+                <button class="mini-btn" onclick="takeRetroPhoto()">📸 ถ่ายรูป (2538)</button>
+                <button id="recVideoBtn" class="mini-btn sec" onclick="toggleVideoRecord()">🎥 อัดวิดีโอ+เสียง</button>
+            </div>
+            <div id="camPreviewResult" style="margin-top:6px;text-align:center"></div>`;
+        startCameraStream();
+    } else if (currentApp === 'gallery') {
+        const savedPhotos = JSON.parse(localStorage.getItem('retro_gallery_95') || "[]");
+        vp.innerHTML = savedPhotos.length === 0
+            ? `<div class="mini-card" style="text-align:center;margin-top:30px">ยังไม่มีรูปในอัลบั้มค่ะ<br><button class="mini-btn" onclick="openApp('camera')">เปิดกล้อง 2538 ถ่ายรูปเลย!</button></div>`
+            : savedPhotos.map((item, i) => `<div class="mini-card" style="text-align:center"><img src="${item.data}" style="width:100%;border-radius:6px"><div style="font-size:10px;margin:3px 0">${item.date}</div><a href="${item.data}" download="kawaii_1995_${i+1}.png" class="mini-btn green" style="text-decoration:none;display:inline-block">⬇️ โหลดลงเครื่องจริง</a></div>`).join('');
+    } else if (currentApp === 'candy') {
+        lSoft.innerText = "เริ่มใหม่"; cSoft.innerText = "กระโดด"; rSoft.innerText = "กลับ";
+        vp.innerHTML = `
+            <div style="text-align:center">
+                <div style="font-size:12px;font-weight:700;color:#ff77b7;margin-bottom:4px">🐰 มายเมโลดี้เก็บลูกอม 🍬 • คะแนน: <span id="candyScore">0</span></div>
+                <canvas id="candyCanvas" width="250" height="165" onclick="melodyJump()"></canvas>
+                <div style="font-size:10px;color:#72efdd;margin-top:4px">กดปุ่ม OK / ลูกศรขึ้น ▲ / แตะจอ เพื่อให้มายเมโลดี้กระโดด!</div>
+            </div>`;
+        startCandyGame();
+    } else if (currentApp === 'calc') {
+        vp.innerHTML = `<div class="mini-card"><div style="font-weight:700;margin-bottom:4px">🧮 เครื่องคิดเลข 2538</div><input id="calcDisplay" class="mini-input" style="text-align:right;font-family:'VT323',monospace;font-size:22px;margin-bottom:6px" readonly value="0"><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px">${['7','8','9','/','4','5','6','*','1','2','3','-','C','0','=','+'].map(b=>`<button class="mini-btn ${isNaN(b)?'sec':''}" style="margin:0;padding:6px" onclick="calcPress('${b}')">${b}</button>`).join('')}</div></div>`;
+    } else if (currentApp === 'notes') {
+        const savedNote = localStorage.getItem('kawaii_notes_95') || "ไดอารี่ปี 2538...\nวันนี้น่ารักมาก!";
+        vp.innerHTML = `<div class="mini-card"><div style="font-weight:700;margin-bottom:4px">📝 สมุดบันทึกส่วนตัว</div><textarea id="noteArea" class="mini-input" rows="8" onfocus="activeInputId='noteArea'" oninput="localStorage.setItem('kawaii_notes_95',this.value)">${savedNote}</textarea></div>`;
+        activeInputId = 'noteArea';
+    } else if (currentApp === 'alarm') {
+        vp.innerHTML = `<div class="mini-card" style="text-align:center"><div style="font-weight:700;margin-bottom:6px">⏰ นาฬิกาปลุกยุค 90</div><input type="time" id="alarmTimeInput" class="mini-input" value="07:00" style="width:140px;margin:0 auto"><br><button class="mini-btn" onclick="alert('ตั้งปลุกเวลา '+document.getElementById('alarmTimeInput').value+' น. เรียบร้อยค่ะ! 🎀')">ตั้งปลุก</button></div>`;
+    }
+}
+
+function copyMyId() { navigator.clipboard?.writeText(my5DigitNumber); alert(`คัดลอกเบอร์ถาวรของคุณ: ${my5DigitNumber} เรียบร้อย!`); }
+function shareInviteLink() {
+    const url = window.location.href.split('?') + "?friend=" + my5DigitNumber;
+    navigator.clipboard?.writeText(url);
+    alert(`คัดลอกลิงก์ชวนเพื่อนแล้ว!\nส่งให้เพื่อนกดเข้ามาคุยกับเบอร์ ${my5DigitNumber} ได้เลย:\n${url}`);
+}
+function sendChatMsg() {
+    const inp = document.getElementById('chatMsgInput'), txt = inp.value.trim();
+    if (!txt) return;
+    if (!friendNumber || friendNumber.length !== 5) return alert("กรุณาใส่รหัสเพื่อน 5 ตัวเลขด้านบนแล้วกด 'เชื่อมต่อ' ก่อนส่งนะคะ");
+    if (!activeConn || activeConn.peer !== PEER_PREFIX + friendNumber) connectToFriend(friendNumber);
+    setTimeout(() => { if (activeConn && activeConn.open) activeConn.send({ type: 'chat', text: txt }); }, 400);
+    chatMessages.push({ sender: 'me', id: my5DigitNumber, text: txt, time: getNowTime() });
+    localStorage.setItem('kawaii_chat_logs', JSON.stringify(chatMessages));
+    inp.value = ''; renderApp();
+}
+function makeVoiceCall(targetNum) {
+    if (!targetNum || targetNum.length !== 5) return alert("กรุณากรอกเบอร์เพื่อนให้ครบ 5 ตัวเลขค่ะ");
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+        const call = peer.call(PEER_PREFIX + targetNum, stream); currentCall = call;
+        document.getElementById('callStatusArea').innerText = `📞 กำลังโทรหาเบอร์ ${targetNum}...`;
+        call.on('stream', rStream => {
+            document.getElementById('callStatusArea').innerText = `🔊 กำลังคุยกับ ${targetNum} (กดปุ่มแดงเพื่อวางสาย)`;
+            const a = new Audio(); a.srcObject = rStream; a.play();
+        });
+    }).catch(() => alert("กรุณากดอนุญาตการใช้ไมโครโฟนเพื่อโทรออกค่ะ"));
+}
+function playEmbeddedSong(ytId, title) {
+    const f = document.getElementById('musicIframe'), l = document.getElementById('nowPlayingLabel');
+    if (f) { f.src = `https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&playsinline=1`; l.innerText = `กำลังเล่น: ${title}`; }
+}
+function searchAndPlayYT() {
+    const q = document.getElementById('ytSearchInput').value.trim(); if (!q) return;
+    const f = document.getElementById('ytMainFrame'), m = q.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    f.src = m ? `https://youtube-nocookie.com/embed/${m}?autoplay=1&playsinline=1` : `https://www.youtube-nocookie.com{encodeURIComponent(q)}&autoplay=1&playsinline=1`;
+}
+function quickYT(k) { document.getElementById('ytSearchInput').value = k; searchAndPlayYT(); }
+
+let camStream = null, mediaRecorder = null, recordedChunks = [], isRecording = false;
+function startCameraStream() {
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(s => { camStream = s; const v = document.getElementById('camVideo'); if (v) v.srcObject = s; })
+    .catch(() => { const r = document.getElementById('camPreviewResult'); if (r) r.innerHTML = "<span style='color:#ff77b7;font-size:11px'>กรุณาอนุญาตการใช้กล้องและไมโครโฟนค่ะ</span>"; });
+}
+function stopCameraStream() { if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; } }
+function takeRetroPhoto() {
+    const v = document.getElementById('camVideo'); if (!v || !camStream) return;
+    playBeep(1200, 0.08);
+    const c = document.createElement('canvas'); c.width = 320; c.height = 240;
+    const ctx = c.getContext('2d'); ctx.filter = 'contrast(1.25) saturate(1.35) sepia(.22)'; ctx.drawImage(v, 0, 0, 320, 240);
+    ctx.fillStyle = '#ffeb3b'; ctx.font = 'bold 16px monospace'; ctx.fillText('25/11/2538  SANRIO-95', 12, 225);
+    const url = c.toDataURL('image/png'), g = JSON.parse(localStorage.getItem('retro_gallery_95') || "[]");
+    g.unshift({ data: url, date: getNowTime() + " (2538)" }); localStorage.setItem('retro_gallery_95', JSON.stringify(g.slice(0, 15)));
+    document.getElementById('camPreviewResult').innerHTML = `<div style="font-size:11px;color:#72efdd;font-weight:700">✓ บันทึกเข้าอัลบั้มแล้ว!</div><a href="${url}" download="retro1995_${Date.now()}.png" class="mini-btn green" style="text-decoration:none;display:inline-block">⬇️ โหลดรูปลงมือถือทันที</a>`;
+}
+function toggleVideoRecord() {
+    const btn = document.getElementById('recVideoBtn');
+    if (!isRecording) {
+        if (!camStream) return;
+        recordedChunks = []; mediaRecorder = new MediaRecorder(camStream);
+        mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
+        mediaRecorder.onstop = () => {
+            const url = URL.createObjectURL(new Blob(recordedChunks, { type: 'video/webm' }));
+            document.getElementById('camPreviewResult').innerHTML = `<video src="${url}" controls style="width:100%;border-radius:6px;margin-top:4px"></video><a href="${url}" download="video1995_${Date.now()}.webm" class="mini-btn green" style="text-decoration:none;display:inline-block">⬇️ ดาวน์โหลดวิดีโอมีเสียง</a>`;
+        };
+        mediaRecorder.start(); isRecording = true; btn.innerText = "⏹️ หยุดอัดวิดีโอ"; btn.style.background = "#ff4d94";
+    } else { mediaRecorder.stop(); isRecording = false; btn.innerText = "🎥 อัดวิดีโอ+เสียง"; btn.style.background = "#4cc9f0"; }
+}
+
+let calcExpr = "";
+function calcPress(val) {
+    const d = document.getElementById('calcDisplay');
+    if (val === 'C') { calcExpr = ""; d.value = "0"; }
+    else if (val === '=') { try { calcExpr = eval(calcExpr).toString(); d.value = calcExpr; } catch { d.value = "Error"; calcExpr = ""; } }
+    else { calcExpr += val; d.value = calcExpr; }
+}
+
+let candyTimer = null, melodyY = 120, melodyVy = 0, isJumping = false;
+function melodyJump() {
+    if (!isJumping) {
+        melodyVy = -11;
+        isJumping = true;
+        playBeep(950, 0.08, 'triangle');
+    }
+}
+function stopCandyGame() { if (candyTimer) clearInterval(candyTimer); }
+function startCandyGame() {
+    stopCandyGame();
+    const c = document.getElementById('candyCanvas'); if (!c) return;
+    const ctx = c.getContext('2d');
+    melodyY = 120; melodyVy = 0; isJumping = false;
+    let score = 0, candyX = 240, candyY = 75, rockX = 340;
+
+    candyTimer = setInterval(() => {
+        ctx.clearRect(0, 0, c.width, c.height);
+        ctx.fillStyle = "#ff77b7";
+        ctx.fillRect(0, 145, c.width, 20);
+
+        melodyY += melodyVy;
+        melodyVy += 0.85;
+        if (melodyY >= 120) { melodyY = 120; melodyVy = 0; isJumping = false; }
+
+        ctx.font = "26px sans-serif";
+        ctx.fillText("🐰", 30, melodyY + 22);
+
+        candyX -= 4.5;
+        if (candyX < -20) { candyX = 260; candyY = 55 + Math.random() * 55; }
+        ctx.font = "20px sans-serif";
+        ctx.fillText("🍬", candyX, candyY);
+
+        rockX -= 4.5;
+        if (rockX < -20) rockX = 280 + Math.random() * 100;
+        ctx.font = "18px sans-serif";
+        ctx.fillText("🫑", rockX, 142);
+
+        if (Math.abs(35 - candyX) < 22 && Math.abs((melodyY + 10) - candyY) < 24) {
+            score += 10;
+            document.getElementById('candyScore').innerText = score;
+            playBeep(1300, 0.09);
+            candyX = 260;
+        }
+        if (Math.abs(35 - rockX) < 16 && melodyY > 102) {
+            playBeep(220, 0.25, 'sawtooth');
+            score = 0;
+            document.getElementById('candyScore').innerText = score;
+            rockX = 290;
+        }
+    }, 35);
+}
+
+window.onload = () => {
+    const autoFriend = new URLSearchParams(window.location.search).get('friend');
+    if (autoFriend && autoFriend.length === 5) { friendNumber = autoFriend; localStorage.setItem('saved_friend_5digit', autoFriend); }
+    initPeerNetwork(); renderApp();
+};
+</script>
+</body>
+</html>
